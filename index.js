@@ -2,9 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const admin = require('firebase-admin');
 require('dotenv').config();
 
+const admin = require('firebase-admin');
 admin.initializeApp({
   credential: admin.credential.cert({
     type: process.env.FIREBASE_TYPE,
@@ -21,30 +21,19 @@ admin.initializeApp({
   databaseURL: process.env.FIREBASE_DATABASE_URL,
 });
 
-const db = admin.firestore();
+const signUp = require('./auth/signUp');
+const login = require('./auth/login');
+const socialLogin = require('./auth/socialLogin');
+
 const app = express();
 
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
 
-// API (POST /login)
-app.post('/login', async (req, res) => {
-  const { idToken } = req.body;
-
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-
-    const user = decodedToken;
-
-    return res.status(200).json({
-      message: 'Login successful',
-      user: user,
-    });
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid ID token' });
-  }
-});
+app.post('/signup', signUp);
+app.post('/login', login);
+app.post('/social-login', socialLogin);
 
 app.get('/', (req, res) => {
   res.send('서버 실행 중');
